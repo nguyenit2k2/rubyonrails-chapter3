@@ -9,6 +9,7 @@ gem "rails", "~> 7.1.3", ">= 7.1.3.4"
 gem "sprockets-rails"
 gem "bootstrap-sass"
 gem "sassc-rails"
+gem "bcrypt",          "3.1.18"
 # Use sqlite3 as the database for Active Record
 gem "sqlite3", "~> 1.4"
 

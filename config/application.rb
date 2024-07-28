@@ -23,5 +23,11 @@ module SampleApp
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    Rails.application.configure do
+      # Các cấu hình khác ở đây
+    
+      # Tắt cảnh báo khi sử dụng SQLite trong môi trường production
+      config.active_record.sqlite3_production_warning = false
+    end
   end
 end

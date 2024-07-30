@@ -36,9 +36,10 @@ class User < ApplicationRecord
   end
 
   # Returns true if the given token matches the digest.
-  def authenticated?(remember_token)
-    return false if remember_digest.nil?
-    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  def authenticated?(attribute, token)
+    digest = send("#{attribute}_digest")
+    return false if digest.nil?
+    BCrypt::Password.new(digest).is_password?(token)
   end
 
   # Forgets a user.
@@ -47,7 +48,7 @@ class User < ApplicationRecord
   end
    # Activates an account.
    def activate
-    update_columns(activated: FILL_IN, activated_at: FILL_IN)
+    update_columns(activated: true, activated_at: Time.zone.now)
   end
 
   # Sends activation email.
@@ -57,7 +58,7 @@ class User < ApplicationRecord
   # Sets the password reset attributes.
   def create_reset_digest
     self.reset_token = User.new_token
-    update_columns(reset_digest:  FILL_IN, reset_sent_at: FILL_IN)
+    update_columns(reset_digest: User.digest(reset_token), reset_sent_at: Time.zone.now)
   end
 
   # Sends password reset email.

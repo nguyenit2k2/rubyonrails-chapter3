@@ -15,9 +15,10 @@ gem "will_paginate",            "3.3.1"
 gem "bootstrap-will_paginate",  "1.0.0"
 gem "active_storage_validations", "0.9.8"
 gem "image_processing",           "1.12.2"
+gem "aws-sdk-s3", "1.114.0", require: false
 # Use postgresql as the database for Active Record
 gem 'pg'
-
+gem 'dotenv-rails'
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 
@@ -66,7 +67,6 @@ group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
 end
-
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"

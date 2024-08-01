@@ -3,20 +3,25 @@ class UsersController < ApplicationController
                                         :following, :followers]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
+  after_action :verify_authorized, except: [:index, :show]
+  after_action :verify_policy_scoped, only: :index
   def index
-    @users = User.where(activated: true).paginate(page: params[:page])
+    @users = policy_scope(User).where(activated: true).page(params[:page])
   end
   def show
     @user = User.find(params[:id])
-    @microposts = @user.microposts.paginate(page: params[:page])
+    @microposts = @user.microposts.page(params[:page])
+    authorize @user
   end
 
   def new
     @user = User.new
+    authorize @user
   end
 
   def create
     @user = User.new(user_params)
+    authorize @user
     if @user.save
       @user.send_activation_email
       flash[:info] = "Please check your email to activate your account."
@@ -28,10 +33,12 @@ class UsersController < ApplicationController
 
   def edit
     @user = User.find(params[:id])
+    authorize @user
   end
   
   def update
     @user = User.find(params[:id])
+    authorize @user
     if @user.update(user_params)
       flash[:success] = "Profile updated"
       redirect_to @user
@@ -41,12 +48,14 @@ class UsersController < ApplicationController
   end
   def destroy
     User.find(params[:id]).destroy
+    authorize @user
     flash[:success] = "User deleted"
     redirect_to users_url, status: :see_other
   end
   def following
     @title = "Following"
     @user  = User.find(params[:id])
+    authorize @user
     @users = @user.following.paginate(page: params[:page])
     render 'show_follow', status: :unprocessable_entity
  end
@@ -54,6 +63,7 @@ class UsersController < ApplicationController
  def followers
     @title = "Followers"
     @user  = User.find(params[:id])
+    authorize @user
     @users = @user.followers.paginate(page: params[:page])
     render 'show_follow', status: :unprocessable_entity
  end

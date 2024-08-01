@@ -20,6 +20,7 @@ gem "aws-sdk-s3", "1.114.0", require: false
 gem 'pg'
 gem 'dotenv-rails'
 gem 'pundit'
+gem 'pagy'
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 

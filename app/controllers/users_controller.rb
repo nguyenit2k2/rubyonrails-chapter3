@@ -1,16 +1,21 @@
 class UsersController < ApplicationController
+  include Pagy::Backend
+  include Pagy::Frontend
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy,
                                         :following, :followers]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
   after_action :verify_authorized, except: [:index, :show]
   after_action :verify_policy_scoped, only: :index
+  
   def index
-    @users = policy_scope(User).where(activated: true).page(params[:page])
+    @pagy, @users = pagy(policy_scope(User).where(activated: true))
+    Rails.logger.debug("Pagy object: #{@pagy.inspect}")
   end
   def show
     @user = User.find(params[:id])
-    @microposts = @user.microposts.page(params[:page])
+    # @pagy, @microposts = pagy(@user.microposts.page(params[:page]))
+    @pagy, @microposts = pagy(@user.microposts.order(created_at: :desc).page(params[:page]))
     authorize @user
   end
 
@@ -56,7 +61,7 @@ class UsersController < ApplicationController
     @title = "Following"
     @user  = User.find(params[:id])
     authorize @user
-    @users = @user.following.paginate(page: params[:page])
+    @pagy, @users = pagy(@user.following.paginate(page: params[:page]))
     render 'show_follow', status: :unprocessable_entity
  end
 
@@ -64,7 +69,7 @@ class UsersController < ApplicationController
     @title = "Followers"
     @user  = User.find(params[:id])
     authorize @user
-    @users = @user.followers.paginate(page: params[:page])
+    @pagy, @users = pagy(@user.followers.paginate(page: params[:page]))
     render 'show_follow', status: :unprocessable_entity
  end
     private

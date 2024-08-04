@@ -1,4 +1,8 @@
 class User < ApplicationRecord
+  # Include default devise modules. Others available are:
+  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable, :omniauthable, omniauth_providers: [:google_oauth2]
   has_many :microposts, dependent: :destroy
   has_many :active_relationships,   class_name:   "Relationship",
                                     foreign_key:  "follower_id",
@@ -16,7 +20,6 @@ class User < ApplicationRecord
   validates :email, presence: true, length: { maximum: 255 },
                     format: { with: VALID_EMAIL_REGEX },
                     uniqueness: true
-  has_secure_password
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
   # Returns the hash digest of the given string.
@@ -101,6 +104,38 @@ end
 # Returns true if the current user is following the other user.
 def following?(other_user)
   following.include?(other_user)
+end
+def self.from_omniauth(access_token)
+  data = access_token.info
+  user = User.where(email: data['email']).first
+
+  unless user
+    user = User.create(
+      name: data['name'],
+      email: data['email'],
+      password: Devise.friendly_token[0, 20]
+    )
+  end
+  user
+end
+def google_oauth2
+  Rails.logger.info "OmniAuth Data: #{request.env['omniauth.auth'].inspect}"
+  @user = User.from_omniauth(request.env['omniauth.auth'])
+
+  if @user.persisted?
+    Rails.logger.info "User Authenticated: #{@user.inspect}"
+    sign_in_and_redirect @user, event: :authentication
+    set_flash_message(:notice, :success, kind: 'Google') if is_navigational_format?
+  else
+    Rails.logger.info "User Not Authenticated: #{@user.errors.full_messages.join("\n")}"
+    session['devise.google_data'] = request.env['omniauth.auth'].except(:extra)
+    redirect_to new_user_registration_url, alert: @user.errors.full_messages.join("\n")
+  end
+end
+
+
+def failure
+  redirect_to root_path
 end
   private
 
